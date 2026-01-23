@@ -1,169 +1,45 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مواقف برج مجدول</title>
-
-<style>
-:root {
-    --bg: #eef1f6;
-    --card: #ffffff;
-    --text: #1f2a44;
-    --input: #ffffff;
-    --border: #ddd;
-}
-
-body.dark {
-    --bg: #121212;
-    --card: #1e1e1e;
-    --text: #f1f1f1;
-    --input: #2a2a2a;
-    --border: #333;
-}
-
-body {
-    margin: 0;
-    font-family: "Segoe UI", Tahoma, Arial;
-    background: var(--bg);
-    color: var(--text);
-    display: flex;
-    justify-content: center;
-}
-
-.page {
-    width: 100%;
-    max-width: 430px;
-}
-
-/* ===== Header ===== */
-header {
-    background: var(--card);
-    padding: 18px 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,.1);
-    text-align: center;
-}
-
-.header-logos {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-header img {
-    height: 45px;
-}
-
-.toggle {
-    cursor: pointer;
-    font-size: 22px;
-    user-select: none;
-}
-
-header h1 {
-    font-size: 20px;
-    margin: 10px 0 0;
-}
-
-/* ===== Content ===== */
-.container {
-    padding: 16px;
-}
-
-.search-box {
-    background: var(--card);
-    padding: 16px;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,.1);
-    margin-bottom: 16px;
-}
-
-.search-box input {
-    width: 100%;
-    padding: 16px;
-    margin-bottom: 12px;
-    font-size: 17px;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    background: var(--input);
-    color: var(--text);
-}
-
-/* ===== Cards ===== */
-.card {
-    background: var(--card);
-    padding: 18px;
-    border-radius: 18px;
-    margin-bottom: 14px;
-    box-shadow: 0 6px 16px rgba(0,0,0,.12);
-    border-right: 6px solid #999;
-}
-
-.card.active { border-right-color: #28a745; }
-.card.inactive { border-right-color: #dc3545; }
-
-.card div {
-    margin-bottom: 6px;
-    font-size: 16px;
-}
-
-.status {
-    text-align: center;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
-.status.active { color: #28a745; }
-.status.inactive { color: #dc3545; }
-
-/* ===== Footer ===== */
-footer {
-    text-align: center;
-    font-size: 13px;
-    padding: 18px 10px 24px;
-    color: #555;
-}
-
-footer strong {
-    font-weight: 700;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مواقف برج مجدول</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-<div class="page">
+    <div class="blob"></div>
+    <div class="blob"></div>
 
-<header>
-    <div class="header-logos">
-        <img src="Majdoul.png" alt="Majdoul Tower">
+    <div class="page">
+        <header>
+            <div class="header-logos">
+                <img src="Majdoul.png" alt="Majdoul Tower">
+                <div class="toggle" id="themeToggle" onclick="toggleDark()">🌙</div>
+                <img src="linkexpert.png" alt="Link Expert">
+            </div>
+            <h1>مواقف برج مجدول</h1>
+        </header>
 
-        <!-- زر الوضع الليلي في المنتصف -->
-        <div class="toggle" onclick="toggleDark()">🌙</div>
+        <div class="container">
+            <div id="loader" class="glass-loader">
+                <div class="spinner"></div>
+                <p>جاري تحميل البيانات...</p>
+            </div>
 
-        <img src="linkexpert.png" alt="Link Expert">
+            <div class="search-box" id="searchBox" style="display:none;">
+                <input id="plateInput" type="text" placeholder="🔎 البحث برقم اللوحة" autocomplete="off">
+                <input id="employeeInput" type="text" placeholder="👤 البحث باسم الموظف" autocomplete="off">
+            </div>
+
+            <div id="results"></div>
+        </div>
+
+        <footer>
+            الموقع: برج مجدول <br>
+            الشركة المشغلة للمرافق: <strong>خبير الربط - Link Expert</strong>
+        </footer>
     </div>
 
-    <h1>مواقف برج مجدول</h1>
-</header>
-
-<div class="container">
-
-    <div class="search-box">
-        <input id="plateInput" placeholder="🔎 البحث برقم اللوحة">
-        <input id="employeeInput" placeholder="👤 البحث باسم الموظف">
-    </div>
-
-    <div id="results"></div>
-
-</div>
-
-<footer>
-    الموقع: برج مجدول <br>
-    الشركة المشغلة للمرافق: <strong>خبير الربط - Link Expert</strong>
-</footer>
-
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
