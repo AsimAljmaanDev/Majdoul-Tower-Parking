@@ -1,25 +1,13 @@
-/***********************
-  GLOBAL DATA
-************************/
 let carsData = [];
 
-/***********************
-  HELPERS
-************************/
-function normalize(text) {
-    return text ? text.toString().trim().toUpperCase() : '';
-}
+const normalize = (text) => text ? text.toString().trim().toUpperCase() : '';
 
-/***********************
-  LOAD CSV
-************************/
+// 1. Load CSV with Loader UI
 fetch('data.csv')
     .then(res => res.text())
     .then(data => {
         const rows = data.split('\n').filter(r => r.trim() !== '');
-        const headers = rows[0]
-            .split(',')
-            .map(h => h.replace('\ufeff', '').trim());
+        const headers = rows[0].split(',').map(h => h.replace('\ufeff', '').trim());
 
         const col = {
             client: headers.indexOf('Client'),
@@ -30,87 +18,73 @@ fetch('data.csv')
             status: headers.indexOf('Status')
         };
 
-        for (let i = 1; i < rows.length; i++) {
-            const cols = rows[i].split(',');
-
-            carsData.push({
+        carsData = rows.slice(1).map(row => {
+            const cols = row.split(',');
+            return {
                 client: cols[col.client]?.trim() || '-',
                 plate: cols[col.plate]?.trim() || '-',
                 model: cols[col.model]?.trim() || '-',
                 color: cols[col.color]?.trim() || '-',
                 employee: cols[col.employee]?.trim() || '-',
                 status: cols[col.status]?.trim() || '-'
-            });
-        }
+            };
+        });
 
-        console.log('CSV Loaded ✅', carsData.length);
+        // Hide loader and show search box
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('searchBox').style.display = 'block';
     })
-    .catch(err => console.error('CSV Error ❌', err));
+    .catch(err => {
+        console.error('CSV Error:', err);
+        document.getElementById('loader').innerHTML = '❌ خطأ في تحميل البيانات';
+    });
 
-/***********************
-  SEARCH
-************************/
+// 2. Optimized Search function
 function runSearch() {
     const plateInput = normalize(document.getElementById('plateInput').value);
     const empInput = normalize(document.getElementById('employeeInput').value);
     const container = document.getElementById('results');
 
     container.innerHTML = '';
-
     if (!plateInput && !empInput) return;
-    if (carsData.length === 0) return;
 
     const results = carsData.filter(car => {
-        const matchPlate = plateInput
-            ? normalize(car.plate).includes(plateInput)
-            : true;
-
-        const matchEmp = empInput
-            ? normalize(car.employee).includes(empInput)
-            : true;
-
+        const matchPlate = plateInput ? normalize(car.plate).includes(plateInput) : true;
+        const matchEmp = empInput ? normalize(car.employee).includes(empInput) : true;
         return matchPlate && matchEmp;
     });
 
     if (results.length === 0) {
-        container.innerHTML =
-            `<p style="text-align:center;">لا توجد نتائج</p>`;
+        container.innerHTML = `<div class="card" style="text-align:center;">لا توجد نتائج مطابقة</div>`;
         return;
     }
 
     results.forEach(car => {
-        const active =
-            car.status.toLowerCase().includes('active') ||
-            car.status.includes('نشط');
-
+        const isActive = car.status.toLowerCase().includes('active') || car.status.includes('نشط');
+        
         container.innerHTML += `
-        <div class="card ${active ? 'active' : 'inactive'}">
-            <div><strong>العميل:</strong> ${car.client}</div>
-            <div><strong>اللوحة:</strong> ${car.plate}</div>
-            <div><strong>الموديل:</strong> ${car.model}</div>
-            <div><strong>اللون:</strong> ${car.color}</div>
-            <div><strong>اسم الموظف:</strong> ${car.employee}</div>
-            <div class="status ${active ? 'active' : 'inactive'}">
-                ${active ? '🟢 نشط' : '🔴 غير نشط'}
-            </div>
-        </div>`;
+            <div class="card">
+                <div><strong>العميل:</strong> ${car.client}</div>
+                <div><strong>اللوحة:</strong> ${car.plate}</div>
+                <div><strong>الموديل:</strong> ${car.model}</div>
+                <div><strong>اللون:</strong> ${car.color}</div>
+                <div><strong>اسم الموظف:</strong> ${car.employee}</div>
+                <div class="status-pill ${isActive ? 'active-pill' : 'inactive-pill'}">
+                    ${isActive ? '🟢 نشط' : '🔴 غير نشط'}
+                </div>
+            </div>`;
     });
 }
 
-/***********************
-  DARK MODE (MATCH HTML)
-************************/
+// 3. Theme Toggle logic
 function toggleDark() {
     document.body.classList.toggle('dark');
+    const btn = document.getElementById('themeToggle');
+    btn.innerText = document.body.classList.contains('dark') ? '☀️' : '🌙';
 }
 
-/***********************
-  AUTO SEARCH
-************************/
+// 4. Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('plateInput')
-        .addEventListener('input', runSearch);
-
-    document.getElementById('employeeInput')
-        .addEventListener('input', runSearch);
+    document.getElementById('plateInput').addEventListener('input', runSearch);
+    document.getElementById('employeeInput').addEventListener('input', runSearch);
 });
