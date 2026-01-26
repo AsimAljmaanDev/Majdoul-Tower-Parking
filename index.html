@@ -23,12 +23,12 @@
         <div class="container">
             <div id="loader" class="glass-loader">
                 <div class="spinner"></div>
-                <p>جاري تحميل البيانات...</p>
+                <p>جاري جلب البيانات من النظام...</p>
             </div>
 
             <div class="search-box" id="searchBox" style="display:none;">
-                <input id="plateInput" type="text" placeholder="🔎 البحث برقم اللوحة" autocomplete="off">
-                <input id="employeeInput" type="text" placeholder="👤 البحث باسم الموظف" autocomplete="off">
+                <input id="plateInput" type="text" placeholder="🔎 البحث برقم اللوحة" autocomplete="off" oninput="filterData()">
+                <input id="employeeInput" type="text" placeholder="👤 البحث باسم الموظف" autocomplete="off" oninput="filterData()">
             </div>
 
             <div id="results"></div>
@@ -40,6 +40,84 @@
         </footer>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // رابط الديبلويمنت الخاص بك (Web App URL)
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCmZCoItc1KTDPP_afzdhC5T-Vz8z6e11iVN9etRXpqj7Ecfm1O5ml0uqWVX7nJPBx/exec";
+        
+        let allData = [];
+
+        // جلب البيانات من الـ Script
+        async function fetchData() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                // تخزين البيانات في مصفوفة (تأكد أن السكريبت يرسل مصفوفة كائنات)
+                allData = data;
+
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('searchBox').style.display = 'flex';
+                renderResults(allData);
+            } catch (error) {
+                console.error("خطأ في الاتصال بالـ Script:", error);
+                document.getElementById('loader').innerHTML = "<p>فشل جلب البيانات من Google Script. تأكد من إعدادات النشر.</p>";
+            }
+        }
+
+        function renderResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            if (data.length === 0) {
+                resultsDiv.innerHTML = '<p style="text-align:center; opacity:0.7;">لا توجد نتائج مطابقة</p>';
+                return;
+            }
+
+            data.forEach(item => {
+                // استخراج الحالة لتحديد اللون (أخضر للنشط وأحمر لغير النشط)
+                const statusStr = String(item.status || item.الحالة || "");
+                const isActive = !statusStr.includes('غير');
+
+                const card = document.createElement('div');
+                card.className = 'car-card'; 
+                
+                // استخدام بيانات الكائنات القادمة من السكريبت مباشرة
+                // ملاحظة: تأكد أن أسماء الخصائص (plate, client..) تطابق ما يرسله السكريبت
+                card.innerHTML = `
+                    <div style="padding: 20px; border-radius: 15px; background: rgba(255,255,255,0.05); margin-bottom: 15px; border-right: 6px solid ${isActive ? '#34c759' : '#ff3b30'};">
+                        <h3 style="margin-top: 0;">اللوحة: ${item.plate || item.اللوحة || "غير معروف"}</h3>
+                        <div style="font-size: 0.9em; opacity: 0.9;">
+                            <p><b>العميل:</b> ${item.client || item.العميل || "-"}</p>
+                            <p><b>الموظف:</b> ${item.emp || item.employee || item.الموظف || "-"}</p>
+                            <p><b>السيارة:</b> ${item.model || item.الموديل || "-"} - ${item.color || item.اللون || "-"}</p>
+                            <p style="color: ${isActive ? '#34c759' : '#ff3b30'}; font-weight: bold;">الحالة: ${statusStr}</p>
+                        </div>
+                    </div>
+                `;
+                resultsDiv.appendChild(card);
+            });
+        }
+
+        function filterData() {
+            const plateVal = document.getElementById('plateInput').value.toLowerCase();
+            const empVal = document.getElementById('employeeInput').value.toLowerCase();
+
+            const filtered = allData.filter(item => {
+                const plate = String(item.plate || item.اللوحة || "").toLowerCase();
+                const emp = String(item.emp || item.employee || item.الموظف || "").toLowerCase();
+                return plate.includes(plateVal) && emp.includes(empVal);
+            });
+            renderResults(filtered);
+        }
+
+        function toggleDark() {
+            document.body.classList.toggle('dark-mode');
+            const btn = document.getElementById('themeToggle');
+            btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        }
+
+        // تشغيل الجلب فور تحميل الصفحة
+        window.onload = fetchData;
+    </script>
 </body>
 </html>
