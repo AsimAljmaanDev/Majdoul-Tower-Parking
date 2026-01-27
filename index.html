@@ -26,7 +26,7 @@
                 <p>جاري جلب البيانات من النظام...</p>
             </div>
 
-            <div class="search-box" id="searchBox" style="display:none;">
+            <div class="search-box" id="searchBox" style="display:none; flex-direction: column; gap: 10px;">
                 <input id="plateInput" type="text" placeholder="🔎 البحث برقم اللوحة" autocomplete="off" oninput="filterData()">
                 <input id="employeeInput" type="text" placeholder="👤 البحث باسم الموظف" autocomplete="off" oninput="filterData()">
             </div>
@@ -41,18 +41,15 @@
     </div>
 
     <script>
-        // رابط الديبلويمنت الخاص بك (Web App URL)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCmZCoItc1KTDPP_afzdhC5T-Vz8z6e11iVN9etRXpqj7Ecfm1O5ml0uqWVX7nJPBx/exec";
         
         let allData = [];
 
-        // جلب البيانات من الـ Script
         async function fetchData() {
             try {
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
                 
-                // تخزين البيانات في مصفوفة (تأكد أن السكريبت يرسل مصفوفة كائنات)
                 allData = data;
 
                 document.getElementById('loader').style.display = 'none';
@@ -74,15 +71,15 @@
             }
 
             data.forEach(item => {
-                // استخراج الحالة لتحديد اللون (أخضر للنشط وأحمر لغير النشط)
                 const statusStr = String(item.status || item.الحالة || "");
-                const isActive = !statusStr.includes('غير');
+                
+                // تعديل المنطق هنا ليشمل كلمة Inactive بالإنجليزية وأي حالة تحتوي على "غير"
+                const isInactive = statusStr.toLowerCase().includes('inactive') || statusStr.includes('غير');
+                const isActive = !isInactive;
 
                 const card = document.createElement('div');
                 card.className = 'car-card'; 
                 
-                // استخدام بيانات الكائنات القادمة من السكريبت مباشرة
-                // ملاحظة: تأكد أن أسماء الخصائص (plate, client..) تطابق ما يرسله السكريبت
                 card.innerHTML = `
                     <div style="padding: 20px; border-radius: 15px; background: rgba(255,255,255,0.05); margin-bottom: 15px; border-right: 6px solid ${isActive ? '#34c759' : '#ff3b30'};">
                         <h3 style="margin-top: 0;">اللوحة: ${item.plate || item.اللوحة || "غير معروف"}</h3>
@@ -116,7 +113,6 @@
             btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
         }
 
-        // تشغيل الجلب فور تحميل الصفحة
         window.onload = fetchData;
     </script>
 </body>
