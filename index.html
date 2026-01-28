@@ -22,25 +22,16 @@
       "background_color": "#f3f4f6",
       "theme_color": "#4f46e5",
       "icons": [
-        {
-          "src": "logo-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        },
-        {
-          "src": "logo-512.png",
-          "sizes": "512x512",
-          "type": "image/png"
-        }
+        {"src": "logo-192.png", "sizes": "192x192", "type": "image/png"},
+        {"src": "logo-512.png", "sizes": "512x512", "type": "image/png"}
       ]
     }
     </script>
 
     <style>
-        /* (نفس تنسيقات الـ CSS السابقة مع لمسة تحسين للبطاقات) */
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.88);
-            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.6);
             --text-color: #1e293b;
             --accent: #4f46e5;
             --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -63,7 +54,7 @@
             color: var(--text-color);
             min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            transition: 0.3s ease;
+            transition: background 0.3s ease;
         }
 
         .blob {
@@ -108,15 +99,17 @@
         .search-box input {
             width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 12px;
             border: 1px solid rgba(0,0,0,0.1); outline: none; box-sizing: border-box;
-            background: rgba(255,255,255,0.6); font-size: 16px;
+            background: rgba(255,255,255,0.6); font-size: 16px; text-align: center;
         }
         body.dark .search-box input { background: rgba(0,0,0,0.3); color: white; }
 
         .card {
             background: var(--glass-bg); border: 1px solid var(--glass-border);
             margin: 12px 15px; padding: 18px; border-radius: 22px;
-            box-shadow: var(--card-shadow); transition: 0.2s;
+            box-shadow: var(--card-shadow); animation: fadeIn 0.3s ease;
         }
+        @keyframes fadeIn { from {opacity: 0; transform: translateY(10px);} to {opacity: 1; transform: translateY(0);} }
+
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .plate { font-weight: 800; font-size: 1.25em; color: var(--accent); }
         
@@ -147,7 +140,7 @@
                     <button class="view-btn" onclick="toggleLayout()" id="vBtn">📱</button>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-weight: bold; font-size: 1em;">مواقف مجدول</span>
+                    <span style="font-weight: bold;">مواقف مجدول</span>
                     <img src="logo-192.png" alt="Logo" style="height: 35px; border-radius: 8px;">
                 </div>
             </div>
@@ -159,8 +152,8 @@
                 <p style="text-align:center">جاري تحديث البيانات...</p>
             </div>
             <div class="search-box" id="searchBox" style="display:none;">
-                <input id="pInp" type="text" placeholder="🔎 رقم اللوحة...">
-                <input id="eInp" type="text" placeholder="👤 اسم الموظف...">
+                <input id="pInp" type="text" placeholder="🔎 ابحث برقم اللوحة (مثال: 1234)">
+                <input id="eInp" type="text" placeholder="👤 ابحث باسم الموظف">
             </div>
         </div>
 
@@ -172,7 +165,7 @@
     </div>
 
     <script>
-        // تحويل الـ Manifest المكتوب أعلاه إلى ملف صالح للمتصفح
+        // إعداد الـ Manifest
         const manifestContent = document.getElementById('manifest').textContent;
         const blob = new Blob([manifestContent], {type: 'application/json'});
         const manifestURL = URL.createObjectURL(blob);
@@ -184,41 +177,59 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCmZCoItc1KTDPP_afzdhC5T-Vz8z6e11iVN9etRXpqj7Ecfm1O5ml0uqWVX7nJPBx/exec";
         let dataStore = [];
 
+        // تنظيف النص للبحث (حذف المسافات وتوحيد الحروف)
+        function cleanText(text) {
+            return text ? String(text).replace(/\s+/g, '').toLowerCase() : '';
+        }
+
         async function init() {
             try {
                 const res = await fetch(SCRIPT_URL);
                 const raw = await res.json();
+                
+                // تخزين البيانات ومعالجتها مسبقاً للبحث السريع
                 dataStore = raw.map(i => ({
-                    p: i.plate || i.اللوحة || '-',
-                    e: i.emp || i.employee || i.الموظف || '-',
-                    c: i.client || i.العميل || '-',
-                    m: `${i.model || i.الموديل || ''} ${i.color || i.اللون || ''}`,
-                    s: String(i.status || i.الحالة || '').toLowerCase()
+                    plateRaw: i.plate || i.اللوحة || '-',
+                    plateClean: cleanText(i.plate || i.اللوحة || ''),
+                    empRaw: i.emp || i.employee || i.الموظف || '-',
+                    empClean: cleanText(i.emp || i.employee || i.الموظف || ''),
+                    client: i.client || i.العميل || '-',
+                    model: `${i.model || i.الموديل || ''} ${i.color || i.اللون || ''}`,
+                    status: String(i.status || i.الحالة || '').toLowerCase()
                 }));
+
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('searchBox').style.display = 'block';
-                render(dataStore);
-            } catch (e) { console.error(e); }
+                render(dataStore); // عرض الكل في البداية
+            } catch (e) { 
+                document.getElementById('loader').innerHTML = "❌ خطأ في تحميل البيانات";
+            }
         }
 
         function render(list) {
             const out = document.getElementById('results');
             out.innerHTML = '';
+            
+            if (list.length === 0) {
+                out.innerHTML = '<p style="text-align:center; padding:20px; opacity:0.6;">لا توجد نتائج مطابقة</p>';
+                return;
+            }
+
             list.forEach(item => {
-                const isOff = item.s.includes('inactive') || item.s.includes('غير');
+                const isOff = item.status.includes('inactive') || item.status.includes('غير');
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
                     <div class="card-header">
-                        <span class="plate">${item.p}</span>
+                        <span class="plate">${item.plateRaw}</span>
                         <span class="badge ${isOff ? 'inactive' : 'active'}">
                             ${isOff ? 'غير نشط' : 'نشط'}
                         </span>
                     </div>
                     <div style="font-size: 14px; line-height: 1.6;">
-                        <div><strong>الموظف:</strong> ${item.e}</div>
-                        <div><strong>العميل:</strong> ${item.c}</div>
-                        <div style="opacity: 0.8;">${item.m}</div>
+                        <div><strong>الموظف:</strong> ${item.empRaw}</div>
+                        <div><strong>العميل:</strong> ${item.client}</div>
+                        <div style="opacity: 0.8; font-size: 13px;">${item.model}</div>
                     </div>
                 `;
                 out.appendChild(card);
@@ -226,9 +237,16 @@
         }
 
         function doSearch() {
-            const p = document.getElementById('pInp').value.toLowerCase();
-            const e = document.getElementById('eInp').value.toLowerCase();
-            render(dataStore.filter(i => i.p.toLowerCase().includes(p) && i.e.toLowerCase().includes(e)));
+            const pQuery = cleanText(document.getElementById('pInp').value);
+            const eQuery = cleanText(document.getElementById('eInp').value);
+
+            const filtered = dataStore.filter(item => {
+                const matchP = item.plateClean.includes(pQuery);
+                const matchE = item.empClean.includes(eQuery);
+                return matchP && matchE;
+            });
+
+            render(filtered);
         }
 
         function toggleMode() { document.body.classList.toggle('dark'); }
@@ -238,12 +256,6 @@
             const isFull = p.style.maxWidth === '100%';
             p.style.maxWidth = isFull ? '450px' : '100%';
             b.innerText = isFull ? '📱' : '💻';
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGV2ID0+IHsgZXYucmVzcG9uZFdpdGgoZmV0Y2goZXYucmVxdWVzdCkpOyB9KTs=');
-            });
         }
 
         document.getElementById('pInp').addEventListener('input', doSearch);
