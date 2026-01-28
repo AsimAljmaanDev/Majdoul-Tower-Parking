@@ -5,51 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تطبيق مواقف مجدول</title>
     
-    <link rel="icon" type="image/png" sizes="192x192" href="logo-192.png">
-    <link rel="apple-touch-icon" href="logo-192.png">
-    
     <meta name="theme-color" content="#4f46e5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="مواقف مجدول">
     
-    <script type="application/json" id="manifest">
-    {
-      "name": "نظام مواقف مجدول",
-      "short_name": "مجدول",
-      "start_url": ".",
-      "display": "standalone",
-      "background_color": "#f3f4f6",
-      "theme_color": "#4f46e5",
-      "icons": [
-        {
-          "src": "logo-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        },
-        {
-          "src": "logo-512.png",
-          "sizes": "512x512",
-          "type": "image/png"
-        }
-      ]
-    }
-    </script>
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIm5pYW0gTWFqZG91bCIsCiAgInNob3J0X25hbWUiIjogIm1hanRvdWwiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2YzZjRmNiIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjk5LzI2OTkyMTYucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
 
     <style>
-        /* (نفس تنسيقات الـ CSS السابقة مع لمسة تحسين للبطاقات) */
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.88);
+            --glass-bg: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(255, 255, 255, 0.5);
             --text-color: #1e293b;
             --accent: #4f46e5;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             --bg-color: #f3f4f6;
             --container-width: 450px;
         }
 
         body.dark {
-            --glass-bg: rgba(30, 41, 59, 0.96);
+            --glass-bg: rgba(30, 41, 59, 0.95);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-color: #f8fafc;
             --accent: #818cf8;
@@ -63,9 +38,10 @@
             color: var(--text-color);
             min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            transition: 0.3s ease;
+            transition: all 0.3s ease;
         }
 
+        /* تحسين الخلفية لمنع التداخل مع البطاقات */
         .blob {
             position: fixed; width: 400px; height: 400px;
             filter: blur(100px); z-index: -1; border-radius: 50%; opacity: 0.15;
@@ -83,6 +59,7 @@
 
         .controls-row { display: flex; justify-content: space-between; align-items: center; }
         
+        /* زر الوضع الليلي المطور */
         .mode-switch {
             width: 50px; height: 26px; background: #cbd5e1;
             border-radius: 50px; cursor: pointer; position: relative; transition: 0.3s;
@@ -91,7 +68,7 @@
         .mode-switch::after {
             content: ''; position: absolute; top: 3px; left: 4px;
             width: 20px; height: 20px; background: white; border-radius: 50%;
-            transition: 0.3s;
+            transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         body.dark .mode-switch::after { transform: translateX(22px); }
 
@@ -108,24 +85,26 @@
         .search-box input {
             width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 12px;
             border: 1px solid rgba(0,0,0,0.1); outline: none; box-sizing: border-box;
-            background: rgba(255,255,255,0.6); font-size: 16px;
+            background: rgba(255,255,255,0.6);
         }
         body.dark .search-box input { background: rgba(0,0,0,0.3); color: white; }
 
         .card {
             background: var(--glass-bg); border: 1px solid var(--glass-border);
-            margin: 12px 15px; padding: 18px; border-radius: 22px;
+            margin: 12px 15px; padding: 18px; border-radius: 20px;
             box-shadow: var(--card-shadow); transition: 0.2s;
         }
+        .card:active { transform: scale(0.98); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .plate { font-weight: 800; font-size: 1.25em; color: var(--accent); }
+        .plate { font-weight: 800; font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
         
-        .badge { padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: bold; }
-        .active { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .badge { padding: 5px 12px; border-radius: 50px; font-size: 12px; font-weight: bold; }
+        .active { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
         .inactive { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
         footer { text-align: center; padding: 30px; font-size: 12px; opacity: 0.6; }
 
+        /* لودر جذاب */
         .spinner {
             width: 30px; height: 30px; border: 3px solid #ddd;
             border-top-color: var(--accent); border-radius: 50%;
@@ -146,9 +125,9 @@
                     <div class="mode-switch" onclick="toggleMode()"></div>
                     <button class="view-btn" onclick="toggleLayout()" id="vBtn">📱</button>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-weight: bold; font-size: 1em;">مواقف مجدول</span>
-                    <img src="logo-192.png" alt="Logo" style="height: 35px; border-radius: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: bold; font-size: 0.9em;">مواقف مجدول</span>
+                    <img src="Majdoul.png" alt="Logo" style="height: 30px;">
                 </div>
             </div>
         </header>
@@ -167,20 +146,11 @@
         <div id="results"></div>
 
         <footer>
-            خبير الربط - Link Expert &copy; 2024
+            نظام خبير الربط الذكي &copy; 2024
         </footer>
     </div>
 
     <script>
-        // تحويل الـ Manifest المكتوب أعلاه إلى ملف صالح للمتصفح
-        const manifestContent = document.getElementById('manifest').textContent;
-        const blob = new Blob([manifestContent], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(blob);
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = manifestURL;
-        document.head.appendChild(link);
-
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCmZCoItc1KTDPP_afzdhC5T-Vz8z6e11iVN9etRXpqj7Ecfm1O5ml0uqWVX7nJPBx/exec";
         let dataStore = [];
 
@@ -198,7 +168,9 @@
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('searchBox').style.display = 'block';
                 render(dataStore);
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         function render(list) {
@@ -232,6 +204,7 @@
         }
 
         function toggleMode() { document.body.classList.toggle('dark'); }
+        
         function toggleLayout() {
             const p = document.getElementById('appPage');
             const b = document.getElementById('vBtn');
@@ -240,6 +213,7 @@
             b.innerText = isFull ? '📱' : '💻';
         }
 
+        // تسجيل Service Worker للعمل كتطبيق
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGV2ID0+IHsgZXYucmVzcG9uZFdpdGgoZmV0Y2goZXYucmVxdWVzdCkpOyB9KTs=');
