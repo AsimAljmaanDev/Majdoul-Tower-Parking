@@ -3,117 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مواقف برج مجدول</title>
-    <link rel="stylesheet" href="style.css">
+    <title>تطبيق مواقف مجدول</title>
+    
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مواقف مجدول">
+    
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIm5pYW0gTWFqZG91bCIsCiAgInNob3J0X25hbWUiIjogIm1hanRvdWwiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2YzZjRmNiIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZjQ2ZTUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjk5LzI2OTkyMTYucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text-color: #1e293b;
+            --accent: #4f46e5;
+            --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            --bg-color: #f3f4f6;
+            --container-width: 450px;
+        }
+
+        body.dark {
+            --glass-bg: rgba(30, 41, 59, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-color: #f8fafc;
+            --accent: #818cf8;
+            --bg-color: #0f172a;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        /* تحسين الخلفية لمنع التداخل مع البطاقات */
+        .blob {
+            position: fixed; width: 400px; height: 400px;
+            filter: blur(100px); z-index: -1; border-radius: 50%; opacity: 0.15;
+        }
+        .blob-1 { top: -100px; left: -100px; background: var(--accent); }
+        .blob-2 { bottom: -100px; right: -100px; background: #06b6d4; }
+
+        .page { width: 100%; max-width: var(--container-width); transition: max-width 0.4s ease; }
+
+        header {
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border); padding: 15px 20px;
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .controls-row { display: flex; justify-content: space-between; align-items: center; }
+        
+        /* زر الوضع الليلي المطور */
+        .mode-switch {
+            width: 50px; height: 26px; background: #cbd5e1;
+            border-radius: 50px; cursor: pointer; position: relative; transition: 0.3s;
+        }
+        body.dark .mode-switch { background: var(--accent); }
+        .mode-switch::after {
+            content: ''; position: absolute; top: 3px; left: 4px;
+            width: 20px; height: 20px; background: white; border-radius: 50%;
+            transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        body.dark .mode-switch::after { transform: translateX(22px); }
+
+        .view-btn {
+            background: var(--glass-border); border: none; padding: 8px 12px;
+            border-radius: 10px; cursor: pointer; font-size: 16px; color: var(--text-color);
+        }
+
+        .search-container { padding: 15px; }
+        .search-box {
+            background: var(--glass-bg); border: 2px solid var(--glass-border);
+            padding: 15px; border-radius: 20px; box-shadow: var(--card-shadow);
+        }
+        .search-box input {
+            width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.1); outline: none; box-sizing: border-box;
+            background: rgba(255,255,255,0.6);
+        }
+        body.dark .search-box input { background: rgba(0,0,0,0.3); color: white; }
+
+        .card {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            margin: 12px 15px; padding: 18px; border-radius: 20px;
+            box-shadow: var(--card-shadow); transition: 0.2s;
+        }
+        .card:active { transform: scale(0.98); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .plate { font-weight: 800; font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
+        
+        .badge { padding: 5px 12px; border-radius: 50px; font-size: 12px; font-weight: bold; }
+        .active { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .inactive { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        footer { text-align: center; padding: 30px; font-size: 12px; opacity: 0.6; }
+
+        /* لودر جذاب */
+        .spinner {
+            width: 30px; height: 30px; border: 3px solid #ddd;
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 1s infinite linear; margin: 20px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
-    <div class="blob"></div>
-    <div class="blob"></div>
 
-    <div class="page">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="page" id="appPage">
         <header>
-            <div class="header-logos">
-                <img src="Majdoul.png" alt="Majdoul Tower">
-                <div class="toggle" id="themeToggle" onclick="toggleDark()"></div>
-                <img src="linkexpert.png" alt="Link Expert">
+            <div class="controls-row">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="mode-switch" onclick="toggleMode()"></div>
+                    <button class="view-btn" onclick="toggleLayout()" id="vBtn">📱</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: bold; font-size: 0.9em;">مواقف مجدول</span>
+                    <img src="Majdoul.png" alt="Logo" style="height: 30px;">
+                </div>
             </div>
-            <h1>مواقف برج مجدول</h1>
         </header>
 
-        <div class="container">
-            <div id="loader" class="glass-loader">
+        <div class="search-container">
+            <div id="loader">
                 <div class="spinner"></div>
-                <p>جاري جلب البيانات من النظام...</p>
+                <p style="text-align:center">جاري تحديث البيانات...</p>
             </div>
-
-            <div class="search-box" id="searchBox" style="display:none; flex-direction: column; gap: 10px;">
-                <input id="plateInput" type="text" placeholder="🔎 البحث برقم اللوحة" autocomplete="off" oninput="filterData()">
-                <input id="employeeInput" type="text" placeholder="👤 البحث باسم الموظف" autocomplete="off" oninput="filterData()">
+            <div class="search-box" id="searchBox" style="display:none;">
+                <input id="pInp" type="text" placeholder="🔎 رقم اللوحة...">
+                <input id="eInp" type="text" placeholder="👤 اسم الموظف...">
             </div>
-
-            <div id="results"></div>
         </div>
 
+        <div id="results"></div>
+
         <footer>
-            الموقع: برج مجدول <br>
-            الشركة المشغلة للمرافق: <strong>خبير الربط - Link Expert</strong>
+            نظام خبير الربط الذكي &copy; 2024
         </footer>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCmZCoItc1KTDPP_afzdhC5T-Vz8z6e11iVN9etRXpqj7Ecfm1O5ml0uqWVX7nJPBx/exec";
-        
-        let allData = [];
+        let dataStore = [];
 
-        async function fetchData() {
+        async function init() {
             try {
-                const response = await fetch(SCRIPT_URL);
-                const data = await response.json();
-                
-                allData = data;
-
+                const res = await fetch(SCRIPT_URL);
+                const raw = await res.json();
+                dataStore = raw.map(i => ({
+                    p: i.plate || i.اللوحة || '-',
+                    e: i.emp || i.employee || i.الموظف || '-',
+                    c: i.client || i.العميل || '-',
+                    m: `${i.model || i.الموديل || ''} ${i.color || i.اللون || ''}`,
+                    s: String(i.status || i.الحالة || '').toLowerCase()
+                }));
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('searchBox').style.display = 'flex';
-                renderResults(allData);
-            } catch (error) {
-                console.error("خطأ في الاتصال بالـ Script:", error);
-                document.getElementById('loader').innerHTML = "<p>فشل جلب البيانات من Google Script. تأكد من إعدادات النشر.</p>";
+                document.getElementById('searchBox').style.display = 'block';
+                render(dataStore);
+            } catch (e) {
+                console.error(e);
             }
         }
 
-        function renderResults(data) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
-
-            if (data.length === 0) {
-                resultsDiv.innerHTML = '<p style="text-align:center; opacity:0.7;">لا توجد نتائج مطابقة</p>';
-                return;
-            }
-
-            data.forEach(item => {
-                const statusStr = String(item.status || item.الحالة || "");
-                
-                // تعديل المنطق هنا ليشمل كلمة Inactive بالإنجليزية وأي حالة تحتوي على "غير"
-                const isInactive = statusStr.toLowerCase().includes('inactive') || statusStr.includes('غير');
-                const isActive = !isInactive;
-
+        function render(list) {
+            const out = document.getElementById('results');
+            out.innerHTML = '';
+            list.forEach(item => {
+                const isOff = item.s.includes('inactive') || item.s.includes('غير');
                 const card = document.createElement('div');
-                card.className = 'car-card'; 
-                
+                card.className = 'card';
                 card.innerHTML = `
-                    <div style="padding: 20px; border-radius: 15px; background: rgba(255,255,255,0.05); margin-bottom: 15px; border-right: 6px solid ${isActive ? '#34c759' : '#ff3b30'};">
-                        <h3 style="margin-top: 0;">اللوحة: ${item.plate || item.اللوحة || "غير معروف"}</h3>
-                        <div style="font-size: 0.9em; opacity: 0.9;">
-                            <p><b>العميل:</b> ${item.client || item.العميل || "-"}</p>
-                            <p><b>الموظف:</b> ${item.emp || item.employee || item.الموظف || "-"}</p>
-                            <p><b>السيارة:</b> ${item.model || item.الموديل || "-"} - ${item.color || item.اللون || "-"}</p>
-                            <p style="color: ${isActive ? '#34c759' : '#ff3b30'}; font-weight: bold;">الحالة: ${statusStr}</p>
-                        </div>
+                    <div class="card-header">
+                        <span class="plate">${item.p}</span>
+                        <span class="badge ${isOff ? 'inactive' : 'active'}">
+                            ${isOff ? 'غير نشط' : 'نشط'}
+                        </span>
+                    </div>
+                    <div style="font-size: 14px; line-height: 1.6;">
+                        <div><strong>الموظف:</strong> ${item.e}</div>
+                        <div><strong>العميل:</strong> ${item.c}</div>
+                        <div style="opacity: 0.8;">${item.m}</div>
                     </div>
                 `;
-                resultsDiv.appendChild(card);
+                out.appendChild(card);
             });
         }
 
-        function filterData() {
-            const plateVal = document.getElementById('plateInput').value.toLowerCase();
-            const empVal = document.getElementById('employeeInput').value.toLowerCase();
+        function doSearch() {
+            const p = document.getElementById('pInp').value.toLowerCase();
+            const e = document.getElementById('eInp').value.toLowerCase();
+            render(dataStore.filter(i => i.p.toLowerCase().includes(p) && i.e.toLowerCase().includes(e)));
+        }
 
-            const filtered = allData.filter(item => {
-                const plate = String(item.plate || item.اللوحة || "").toLowerCase();
-                const emp = String(item.emp || item.employee || item.الموظف || "").toLowerCase();
-                return plate.includes(plateVal) && emp.includes(empVal);
+        function toggleMode() { document.body.classList.toggle('dark'); }
+        
+        function toggleLayout() {
+            const p = document.getElementById('appPage');
+            const b = document.getElementById('vBtn');
+            const isFull = p.style.maxWidth === '100%';
+            p.style.maxWidth = isFull ? '450px' : '100%';
+            b.innerText = isFull ? '📱' : '💻';
+        }
+
+        // تسجيل Service Worker للعمل كتطبيق
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGV2ID0+IHsgZXYucmVzcG9uZFdpdGgoZmV0Y2goZXYucmVxdWVzdCkpOyB9KTs=');
             });
-            renderResults(filtered);
         }
 
-        function toggleDark() {
-            document.body.classList.toggle('dark-mode');
-            const btn = document.getElementById('themeToggle');
-            btn.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-        }
-
-        window.onload = fetchData;
+        document.getElementById('pInp').addEventListener('input', doSearch);
+        document.getElementById('eInp').addEventListener('input', doSearch);
+        window.onload = init;
     </script>
 </body>
 </html>
