@@ -237,13 +237,13 @@
         }
 
         function doSearch() {
-            const pQuery = cleanText(document.getElementById('pInp').value);
+            const pQuery = cleanText(document.getElementById('eInp').value);
             const eQuery = cleanText(document.getElementById('eInp').value);
 
             const filtered = dataStore.filter(item => {
                 const matchP = item.plateClean.includes(pQuery);
                 const matchE = item.empClean.includes(eQuery);
-                return matchP && matchE;
+                return matchE && matchE;
             });
 
             render(filtered);
