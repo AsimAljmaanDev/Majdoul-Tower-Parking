@@ -243,7 +243,7 @@
             const filtered = dataStore.filter(item => {
                 const matchP = item.plateClean.includes(pQuery);
                 const matchE = item.empClean.includes(eQuery);
-                return matchE && matchE;
+                return matchP && matchE;
             });
 
             render(filtered);
